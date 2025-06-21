@@ -259,7 +259,7 @@ plt.show()
     with open(output_path2, "w") as f:
         f.write(s)
 
-    return [output_path, output_path2, r2s, plot_path]
+    return [output_path, output_path2, r2s, plot_path, s]
 
     # except Exception as e:
     #     return [e]

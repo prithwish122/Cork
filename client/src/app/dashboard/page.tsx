@@ -1,12 +1,11 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React from "react"
+import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { toast, Toaster } from "sonner"
-import { Upload, File, Save, ClipboardCopy, Trash2, Play } from "lucide-react"
-import { json } from "stream/consumers"
+import { Upload, File, ClipboardCopy, Trash2, Play, Download, Brain } from "lucide-react"
 
-// Replace these with your own UI components or use shadcn/ui
 function Button({ children, ...props }: any) {
   return (
     <button
@@ -56,24 +55,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, any>(({ value, onChange, 
 ))
 Textarea.displayName = "Textarea"
 
-const classificationAlgorithms = [
-  { label: "Logistic Regression", value: "logistic-regression" },
-  { label: "Support Vector Machine", value: "svm" },
-  { label: "Decision Tree", value: "decision-tree" },
-  { label: "Random Forest", value: "random-forest-classifier" },
-  { label: "Naive Bayes", value: "naive-bayes" },
-]
-
-const regressionAlgorithms = [
-  { label: "Linear Regression", value: "linear-regression" },
-  { label: "Polynomial Regression", value: "polynomial-regression" },
-  { label: "Support Vector Regression", value: "svr" },
-  { label: "Decision Tree Regression", value: "decision-tree-regression" },
-  { label: "Random Forest Regression", value: "random-forest-regression" },
-]
-
 export default function Dashboard() {
   const [code, setCode] = useState("")
+  const [pythonFile, setPythonFile] = useState("")
+  const [plotPath, setPlotPath] = useState<string | null>(null)
+  const [modelPath, setModelPath] = useState<string | null>(null)
   const [options, setOptions] = useState({
     importLibraries: true,
     dropFirstColumn: true,
@@ -84,7 +70,6 @@ export default function Dashboard() {
   })
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("")
   const [algorithmCategory, setAlgorithmCategory] = useState("")
-  const [showAlgorithmOptions, setShowAlgorithmOptions] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -97,7 +82,6 @@ export default function Dashboard() {
   } | null>(null)
   const [isUploading, setIsUploading] = useState(false)
 
-  // Form data state to collect all selections
   const [formData, setFormData] = useState({
     dataset: null as File | null,
     options: {
@@ -108,8 +92,7 @@ export default function Dashboard() {
       splitDataset: false,
       performScaling: false,
     },
-    algorithmCategory: "classification", // Added property
-    // generatedCode: "",
+    algorithmCategory: "classification",
   })
 
   const [categoricalInput, setCategoricalInput] = useState("")
@@ -118,7 +101,6 @@ export default function Dashboard() {
   const [regressionRandomState, setRegressionRandomState] = useState("")
   const [decisionTreeCriterion, setDecisionTreeCriterion] = useState("gini")
   const [classificationRandomState, setClassificationRandomState] = useState("")
-  const [backendOutput, setBackendOutput] = useState("")
 
   const parseCSV = (text: string) => {
     const lines = text.split("\n").filter((line) => line.trim())
@@ -149,7 +131,6 @@ export default function Dashboard() {
         preview: rows,
       })
 
-      // Update form data
       setFormData((prev) => ({
         ...prev,
         dataset: file,
@@ -164,142 +145,18 @@ export default function Dashboard() {
   }
 
   const generateCode = () => {
-    let generatedCode = ""
-
-    // Add dataset loading code if file is uploaded
-    if (datasetInfo) {
-      generatedCode += `# Load dataset
-dataset = pd.read_csv('${datasetInfo.fileName}')
-print(f"Dataset shape: {dataset.shape}")
-print(f"Dataset info:")
-print(dataset.info())
-
-`
-    }
-
-    if (options.importLibraries) {
-      generatedCode += `from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import r2_score, accuracy_score
-import pandas as pd
-import numpy as np
-
-`
-    }
-
-    if (options.dropFirstColumn) {
-      generatedCode += `# Drop first column
-X = dataset.iloc[:, 1:-1].values
-y = dataset.iloc[:, -1].values
-
-`
-    }
-
-    if (options.handleMissingData) {
-      generatedCode += `# Handle missing data
-imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
-X = imputer.fit_transform(X)
-
-`
-    }
-
-    if (options.categoricalData) {
-      const integerData = categoricalInput ? `, [${categoricalInput}]` : ", [0]"
-      generatedCode += `# Encode categorical data
-ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder()${integerData})], remainder='passthrough')
-X = np.array(ct.fit_transform(X))
-
-`
-    }
-
-    if (options.splitDataset) {
-      generatedCode += `# Split dataset into training and test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
-
-`
-    }
-
-    if (options.performScaling) {
-      generatedCode += `# Feature scaling
-sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.transform(X_test)
-
-`
-    }
-
-    if (selectedAlgorithm && algorithmCategory) {
-      if (algorithmCategory === "classification") {
-        switch (selectedAlgorithm) {
-          case "logistic-regression":
-            generatedCode += `# Logistic Regression
-classifier = LogisticRegression(random_state=0)
-classifier.fit(X_train, y_train)
-y_pred = classifier.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy}")
-`
-            break
-          case "decision-tree":
-            const randomState = classificationRandomState || "0"
-            generatedCode += `# Decision Tree Classification
-classifier = DecisionTreeClassifier(criterion='${decisionTreeCriterion}', random_state=${randomState})
-classifier.fit(X_train, y_train)
-y_pred = classifier.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy}")
-`
-            break
-        }
-      } else if (algorithmCategory === "regression") {
-        switch (selectedAlgorithm) {
-          case "linear-regression":
-            generatedCode += `# Linear Regression
-regressor = LinearRegression()
-regressor.fit(X_train, y_train)
-y_pred = regressor.predict(X_test)
-r2 = r2_score(y_test, y_pred)
-print(f"R² Score: {r2}")
-`
-            break
-          case "polynomial-regression":
-            const randomState = regressionRandomState || "0"
-            generatedCode += `# Polynomial Regression
-poly_reg = PolynomialFeatures(degree=${polynomialDegree})
-X_poly = poly_reg.fit_transform(X_train)
-regressor = LinearRegression()
-regressor.fit(X_poly, y_train)
-y_pred = regressor.predict(poly_reg.transform(X_test))
-r2 = r2_score(y_test, y_pred)
-print(f"R² Score: {r2}")
-print(f"Polynomial Degree: ${polynomialDegree}")
-print(f"Random State: ${randomState}")
-`
-            break
-        }
-      }
-    }
-
-    setCode(generatedCode)
-
-    // Update form data with generated code
-    setFormData((prev) => ({
-      ...prev,
-      generatedCode: generatedCode,
-    }))
+    // Clear any existing code when generating fresh
+    setCode("")
+    setPythonFile("")
+    setPlotPath(null)
+    setModelPath(null)
+    toast.info("Use 'Run & Fetch' to get Python code from backend")
   }
 
   const toggleOption = (key: keyof typeof options) => {
     const newOptions = { ...options, [key]: !options[key] }
     setOptions(newOptions)
 
-    // Update form data
     setFormData((prev) => ({
       ...prev,
       options: newOptions,
@@ -315,19 +172,14 @@ print(f"Random State: ${randomState}")
     setIsRunning(true)
 
     try {
-      // Create FormData object for file upload
       const apiFormData = new FormData()
 
-      // Add the dataset file
       if (formData.dataset) {
         apiFormData.append("dataset", formData.dataset)
       }
 
-      // Add other form data as JSON
       apiFormData.append("options", JSON.stringify(formData.options))
-      // apiFormData.append("algorithmCategory", formData.algorithmCategory)
       apiFormData.append("selectedAlgorithm", selectedAlgorithm)
-      // apiFormData.append("generatedCode", formData.generatedCode)
       apiFormData.append("categoricalInput", categoricalInput)
       apiFormData.append("categoricalTargetPresent", categoricalTargetPresent.toString())
       apiFormData.append("polynomialDegree", polynomialDegree)
@@ -335,73 +187,58 @@ print(f"Random State: ${randomState}")
       apiFormData.append("decisionTreeCriterion", decisionTreeCriterion)
       apiFormData.append("classificationRandomState", classificationRandomState)
 
-      // tool to convert FormData to JSON
-      // function formDataToJson(formData: FormData) {
-      //   const object: Record<string, any> = {};
-      //   formData.forEach((value, key) => {
-      //     // Handle multiple values (like checkboxes or multi-selects)
-      //     if (Object.prototype.hasOwnProperty.call(object, key)) {
-      //       if (!Array.isArray(object[key])) {
-      //         object[key] = [object[key]];
-      //       }
-      //       object[key].push(value);
-      //     } else {
-      //       object[key] = value;
-      //     }
-      //   });
-      //   return object;
-      // }
-
-// displayer
-
-function logFormData(formData: any[] | FormData) {
-  const data: { [key: string]: any } = {};
-
-  formData.forEach((value, key) => {
-    if (data[key]) {
-      // Convert to array if multiple values for the same key
-      if (!Array.isArray(data[key])) {
-        data[key] = [data[key]];
-      }
-      data[key].push(value);
-    } else {
-      data[key] = value;
-    }
-  });
-
-  // Now log the key-value pairs
-  console.log("FormData Contents:");
-  for (const key in data) {
-    console.log(`${key}:`, data[key]);
-  }
-
-  return data; // Optional: returns a usable object
-}
-
-
-      // const jsonData = logFormData(apiFormData);
-      // const jsonString = JSON.stringify(jsonData, null, 2);
-
-      // Make API call to Flask backend
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
-        body: apiFormData, // Use FormData directly
-        // Do not set Content-Type header when sending FormData; browser will set it automatically
-       
+        body: apiFormData,
       })
-      console.log(apiFormData, "==============")
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
       const result = await response.json()
-      setBackendOutput(JSON.stringify(result, null, 2))
+
+      // Handle rawPyStr from backend response
+      if (result.rawPyStr) {
+        const pythonCodeString =
+          typeof result.rawPyStr === "string" ? result.rawPyStr : JSON.stringify(result.rawPyStr, null, 2)
+        setPythonFile(pythonCodeString)
+        setCode(pythonCodeString)
+      } else if (result.python_code) {
+        const pythonCodeString =
+          typeof result.python_code === "string" ? result.python_code : JSON.stringify(result.python_code, null, 2)
+        setPythonFile(pythonCodeString)
+        setCode(pythonCodeString)
+      } else if (result.code) {
+        const codeString = typeof result.code === "string" ? result.code : JSON.stringify(result.code, null, 2)
+        setPythonFile(codeString)
+        setCode(codeString)
+      } else {
+        // If no specific code field, show the entire response
+        const responseString = JSON.stringify(result, null, 2)
+        setPythonFile(responseString)
+        setCode(responseString)
+      }
+
+      // Handle plot path from backend response
+      if (result.plot_path) {
+        setPlotPath(result.plot_path)
+      } else if (result.plotPath) {
+        setPlotPath(result.plotPath)
+      }
+
+      // Handle model path from backend response
+      if (result.modelPath) {
+        setModelPath(result.modelPath)
+      } else if (result.model_path) {
+        setModelPath(result.model_path)
+      }
+
       toast.success("Machine learning pipeline processed successfully!")
       console.log("Backend response:", result)
     } catch (error) {
       console.error("Error processing ML pipeline:", error)
-      const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error)
-      setBackendOutput(`Error: ${errorMessage}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
       toast.error("Failed to process machine learning pipeline. Please check your Flask backend.")
     } finally {
       setIsRunning(false)
@@ -409,19 +246,31 @@ function logFormData(formData: any[] | FormData) {
   }
 
   const handleSaveCode = () => {
-    const blob = new Blob([code], { type: "text/plain" })
+    if (!pythonFile && !code) {
+      toast.error("No Python code to save. Please generate or run code first.")
+      return
+    }
+
+    const codeToSave = pythonFile || code
+    const blob = new Blob([codeToSave], { type: "text/plain" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = "ml_code.py"
+    a.download = "ml_pipeline.py"
     a.click()
     URL.revokeObjectURL(url)
-    toast.success("Your code has been downloaded as ml_code.py")
+    toast.success("Python file has been downloaded as ml_pipeline.py")
   }
 
   const handleCopyCode = async () => {
+    const codeToSave = pythonFile || code
+    if (!codeToSave) {
+      toast.error("No code to copy.")
+      return
+    }
+
     try {
-      await navigator.clipboard.writeText(code)
+      await navigator.clipboard.writeText(codeToSave)
       toast.success("Code has been copied to clipboard.")
     } catch (err) {
       toast.error("Could not copy code to clipboard.")
@@ -430,6 +279,9 @@ function logFormData(formData: any[] | FormData) {
 
   const clearEditor = () => {
     setCode("")
+    setPythonFile("")
+    setPlotPath(null)
+    setModelPath(null)
     setFormData((prev) => ({
       ...prev,
       generatedCode: "",
@@ -437,31 +289,41 @@ function logFormData(formData: any[] | FormData) {
     toast("Editor cleared", { description: "Code editor has been reset." })
   }
 
-  const handleAlgorithmCategorySelect = (category: "classification" | "regression") => {
-    setAlgorithmCategory(category)
-    setSelectedAlgorithm("")
-    setShowAlgorithmOptions(false)
-
-    // Update form data
-    setFormData((prev) => ({
-      ...prev,
-      algorithmCategory: category,
-      selectedAlgorithm: "",
-    }))
-  }
-
   const handleAlgorithmSelect = (algorithm: string) => {
     setSelectedAlgorithm(algorithm)
 
-    // Update form data
     setFormData((prev) => ({
       ...prev,
       selectedAlgorithm: algorithm,
     }))
   }
 
-  const handleChooseAlgorithmClick = () => {
-    setShowAlgorithmOptions(true)
+  const handleDownloadPlot = () => {
+    if (!plotPath) {
+      toast.error("No plot image to download.")
+      return
+    }
+
+    try {
+      window.location.href = `http://127.0.0.1:5000${plotPath}`
+      toast.success("Plot download started!")
+    } catch (error) {
+      toast.error("Failed to download plot. Please check the plot path.")
+    }
+  }
+
+  const handleDownloadModel = () => {
+    if (!modelPath) {
+      toast.error("No model available to download.")
+      return
+    }
+
+    try {
+      window.location.href = `http://127.0.0.1:5000${modelPath}`
+      toast.success("Model download started!")
+    } catch (error) {
+      toast.error("Failed to download model. Please check the model path.")
+    }
   }
 
   return (
@@ -506,9 +368,21 @@ function logFormData(formData: any[] | FormData) {
               Generate
             </Button>
             <Button onClick={handleSaveCode}>
-              <Save className="inline mr-2 w-5 h-5" />
-              Save
+              <Download className="inline mr-2 w-5 h-5" />
+              Download .py
             </Button>
+            {plotPath && (
+              <Button onClick={handleDownloadPlot}>
+                <Download className="inline mr-2 w-5 h-5" />
+                Download Plot
+              </Button>
+            )}
+            {modelPath && (
+              <Button onClick={handleDownloadModel}>
+                <Brain className="inline mr-2 w-5 h-5" />
+                Download Model
+              </Button>
+            )}
             <Button onClick={handleCopyCode}>
               <ClipboardCopy className="inline mr-2 w-5 h-5" />
               Copy
@@ -530,7 +404,6 @@ function logFormData(formData: any[] | FormData) {
           {/* Gemini Icon */}
           <div className="absolute left-1/2 -translate-x-1/2 -top-7 z-20">
             <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center shadow-lg border-2 border-orange-900">
-              {/* Gemini/star SVG */}
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                 <path
                   d="M16 4C16.8 10.6667 21.3333 15.2 28 16C21.3333 16.8 16.8 21.3333 16 28C15.2 21.3333 10.6667 16.8 4 16C10.6667 15.2 15.2 10.6667 16 4Z"
@@ -540,7 +413,7 @@ function logFormData(formData: any[] | FormData) {
             </div>
           </div>
 
-          {/* Code Editor */}
+          {/* Python Code Editor - Extended */}
           <motion.div
             className="flex-1 border-2 border-orange-500/50 rounded-lg bg-black/20 backdrop-blur-sm flex flex-col"
             initial={{ opacity: 0, x: -50 }}
@@ -548,95 +421,126 @@ function logFormData(formData: any[] | FormData) {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <div className="flex items-center justify-between px-4 py-2 border-b border-orange-400/30">
-              <span className="text-orange-300 font-semibold">Python Code</span>
-              <span className="text-xs text-orange-400">{isRunning ? "Processing..." : ""}</span>
+              <span className="text-orange-300 font-semibold">Python Code (rawPyStr)</span>
+              <div className="flex items-center gap-2">
+                {pythonFile && (
+                  <span className="text-xs text-green-400 bg-green-400/20 px-2 py-1 rounded">Ready for download</span>
+                )}
+                {modelPath && (
+                  <span className="text-xs text-blue-400 bg-blue-400/20 px-2 py-1 rounded">Model ready</span>
+                )}
+                <span className="text-xs text-orange-400">{isRunning ? "Processing..." : ""}</span>
+              </div>
             </div>
             <div className="flex-1">
               <Textarea
                 ref={textareaRef}
-                value={code}
-                onChange={(e: any) => setCode(e.target.value)}
+                value={pythonFile || code}
+                onChange={(e: { target: { value: any } }) => {
+                  const newValue = e.target.value
+                  setCode(newValue)
+                  setPythonFile(newValue)
+                }}
+                className="w-full h-full bg-black/70 text-orange-200 p-4 rounded font-mono resize-none focus:outline-none border-0"
                 spellCheck={false}
-                placeholder="# Your generated code will appear here"
+                placeholder="# rawPyStr from backend will appear here
+# Upload a dataset and click 'Run & Fetch' to get the generated code"
               />
             </div>
-            <div className="p-4 border-t border-orange-400/30 flex justify-end">
+            <div className="p-4 border-t border-orange-400/30 flex justify-between items-center">
+              <div className="text-xs text-orange-400 flex items-center gap-4">
+                <span>{pythonFile ? `${pythonFile.split("\n").length} lines` : "No code generated"}</span>
+                {modelPath && <span className="text-blue-400">Model: {modelPath.split("/").pop()}</span>}
+              </div>
               <Button onClick={handleRunCode} disabled={isRunning}>
                 <Play className="inline mr-2 w-4 h-4" />
-                {isRunning ? "Processing..." : "Run"}
+                {isRunning ? "Processing..." : "Run & Fetch"}
               </Button>
             </div>
           </motion.div>
 
-          {/* Backend Output */}
-          {backendOutput && (
-            <motion.div
-              className="w-80 bg-black/30 backdrop-blur-sm rounded-lg p-4 flex flex-col gap-4 border-2 border-orange-500/40"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-            >
-              <div className="text-orange-300 font-semibold mb-2">Backend Output</div>
-              <div className="flex-1">
-                <textarea
-                  className="w-full h-64 bg-black/70 text-orange-200 p-3 rounded font-mono resize-none focus:outline-none text-sm"
-                  value={backendOutput}
-                  readOnly
-                  placeholder="Backend output will appear here..."
-                />
-              </div>
-            </motion.div>
-          )}
-
-          {/* Dataset Info */}
-          {datasetInfo && (
-            <motion.div
-              className="w-80 bg-black/30 backdrop-blur-sm rounded-lg p-6 flex flex-col gap-4 border-2 border-orange-500/40"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-            >
-              <div className="text-orange-300 font-semibold mb-2">Dataset Info</div>
-              <div className="text-orange-200 text-sm">
-                <div>
-                  <span className="font-bold">File:</span> {datasetInfo.fileName}
+          {/* Right Sidebar */}
+          <div className="flex flex-col gap-6">
+            {/* Dataset Info */}
+            {datasetInfo && (
+              <motion.div
+                className="w-80 bg-black/30 backdrop-blur-sm rounded-lg p-6 flex flex-col gap-4 border-2 border-orange-500/40"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+              >
+                <div className="text-orange-300 font-semibold mb-2">Dataset Info</div>
+                <div className="text-orange-200 text-sm">
+                  <div>
+                    <span className="font-bold">File:</span> {datasetInfo.fileName}
+                  </div>
+                  <div>
+                    <span className="font-bold">Rows:</span> {datasetInfo.rows}
+                  </div>
+                  <div>
+                    <span className="font-bold">Columns:</span> {datasetInfo.columns.length}
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold">Rows:</span> {datasetInfo.rows}
-                </div>
-                <div>
-                  <span className="font-bold">Columns:</span> {datasetInfo.columns.length}
-                </div>
-              </div>
-              <div className="mt-2">
-                <div className="font-bold text-orange-400 text-xs mb-1">Preview:</div>
-                <div className="overflow-x-auto">
-                  <table className="text-xs text-orange-200 border-collapse w-full">
-                    <thead>
-                      <tr>
-                        {datasetInfo.columns.map((col, i) => (
-                          <th key={i} className="border-b border-orange-700 px-1 py-0.5 text-left">
-                            {col}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {datasetInfo.preview.map((row, i) => (
-                        <tr key={i}>
-                          {row.map((cell, j) => (
-                            <td key={j} className="px-1 py-0.5">
-                              {cell}
-                            </td>
+                <div className="mt-2">
+                  <div className="font-bold text-orange-400 text-xs mb-1">Preview:</div>
+                  <div className="overflow-x-auto">
+                    <table className="text-xs text-orange-200 border-collapse w-full">
+                      <thead>
+                        <tr>
+                          {datasetInfo.columns.map((col, i) => (
+                            <th key={i} className="border-b border-orange-700 px-1 py-0.5 text-left">
+                              {col}
+                            </th>
                           ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {datasetInfo.preview.map((row, i) => (
+                          <tr key={i}>
+                            {row.map((cell, j) => (
+                              <td key={j} className="px-1 py-0.5">
+                                {cell}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
+
+            {/* Plot Image Display */}
+            {plotPath && (
+              <motion.div
+                className="w-80 bg-black/30 backdrop-blur-sm rounded-lg p-4 flex flex-col gap-4 border-2 border-orange-500/40"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.4 }}
+              >
+                <div className="text-orange-300 font-semibold mb-2">Matplotlib Plot</div>
+                <div className="flex-1 flex items-center justify-center">
+                  <img
+                    src={`http://127.0.0.1:5000${plotPath}`}
+                    alt="ML Plot"
+                    className="max-w-full max-h-full object-contain rounded border border-orange-400/30"
+                    style={{ maxHeight: "300px" }}
+                    onError={(e) => {
+                      console.error("Failed to load plot image:", plotPath)
+                      toast.error("Failed to load plot image")
+                    }}
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <Button onClick={handleDownloadPlot} className="text-sm">
+                    <Download className="inline mr-2 w-4 h-4" />
+                    Download Plot
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </div>
 
           {/* Options Panel */}
           <motion.div
@@ -675,7 +579,7 @@ function logFormData(formData: any[] | FormData) {
                   />
                 </div>
               )}
-              <div className="flex items-center justify-between ">
+              <div className="flex items-center justify-between">
                 <span className="text-orange-400">Categorical target present</span>
                 <Switch checked={categoricalTargetPresent} onCheckedChange={setCategoricalTargetPresent} />
               </div>
@@ -691,8 +595,6 @@ function logFormData(formData: any[] | FormData) {
 
             {/* Algorithm Selection */}
             <div className="">
-
-
               <div className="mb-3 text-orange-300 font-semibold">Choose Algorithm</div>
               <Select
                 value={algorithmCategory}
@@ -750,7 +652,12 @@ function logFormData(formData: any[] | FormData) {
                     <div className="ml-6 space-y-3">
                       <div>
                         <label className="block text-orange-400 text-sm mb-1">Degree:</label>
-                        <Select value={polynomialDegree} onChange={(e: { target: { value: React.SetStateAction<string> } }) => setPolynomialDegree(e.target.value)}>
+                        <Select
+                          value={polynomialDegree}
+                          onChange={(e: { target: { value: React.SetStateAction<string> } }) =>
+                            setPolynomialDegree(e.target.value)
+                          }
+                        >
                           <option value="2">2</option>
                           <option value="3">3</option>
                           <option value="4">4</option>
@@ -813,7 +720,9 @@ function logFormData(formData: any[] | FormData) {
                         <label className="block text-orange-400 text-sm mb-1">Criterion:</label>
                         <Select
                           value={decisionTreeCriterion}
-                          onChange={(e: { target: { value: React.SetStateAction<string> } }) => setDecisionTreeCriterion(e.target.value)}
+                          onChange={(e: { target: { value: React.SetStateAction<string> } }) =>
+                            setDecisionTreeCriterion(e.target.value)
+                          }
                         >
                           <option value="gini">gini</option>
                           <option value="entropy">entropy</option>
@@ -842,7 +751,9 @@ function logFormData(formData: any[] | FormData) {
               <div className="text-xs text-orange-200 space-y-1">
                 <div>Dataset: {formData.dataset ? formData.dataset.name : "None"}</div>
                 <div>Algorithm Type: {formData.algorithmCategory || "None selected"}</div>
+                <div>Algorithm: {selectedAlgorithm || "None selected"}</div>
                 <div>Options: {Object.entries(formData.options).filter(([_, value]) => value).length} enabled</div>
+                {modelPath && <div className="text-blue-400">Model: Available for download</div>}
               </div>
             </div>
           </motion.div>

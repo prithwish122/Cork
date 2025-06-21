@@ -136,12 +136,14 @@ def upload():
         rawFilePath = output_path[1]
         result = output_path[2]
         plotPath = output_path[3]
+        s = output_path[4]
 
         return jsonify({
             'message': 'File processed',
             'modelPath': f'/download/{os.path.basename(modelPath)}',
             'rawFilePath': f'/download/{os.path.basename(rawFilePath)}',
             'result': result,
+            'rawPyStr': s,
             'plot_path': f'/plot/{os.path.basename(plotPath)}'
         }), 200
 

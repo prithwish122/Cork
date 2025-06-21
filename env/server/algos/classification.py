@@ -412,7 +412,7 @@ plt.show()
         f.write(s)
 
     # plot_path = os.path.join(PROCESSED_FOLDER, f'r3_plot.png')
-    return [output_path, output_path2, acc, plot_path]
+    return [output_path, output_path2, acc, plot_path, s]
 
 # random forest classification
 def func_randomForestClassifier(filepath, PROCESSED_FOLDER):
