@@ -2,7 +2,7 @@ from flask import Blueprint, send_from_directory, jsonify
 import os
 
 download_bp = Blueprint('download', __name__)
-PROCESSED_FOLDER = "D:\\buffer_\\uploads"
+PROCESSED_FOLDER = "C:\\Users\\Prithwish\\OneDrive\\Desktop\\umm\\Hack4bengal_4.O\\uploads"
 
 @download_bp.route('/download/<filename>')
 def download(filename):

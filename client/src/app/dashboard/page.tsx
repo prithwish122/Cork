@@ -383,7 +383,7 @@ function logFormData(formData: any[] | FormData) {
       // const jsonString = JSON.stringify(jsonData, null, 2);
 
       // Make API call to Flask backend
-      const response = await fetch("http://localhost:4000/data", {
+      const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: apiFormData, // Use FormData directly
         // Do not set Content-Type header when sending FormData; browser will set it automatically

@@ -1,0 +1,6 @@
+env/Lib
+.vscode
+env/Scripts
+env/share
+env/pyvenv.cfg
+env/Include

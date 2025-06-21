@@ -4,7 +4,7 @@ from algos import regression, classification
 import json
 
 upload_bp = Blueprint('upload', __name__)
-PROCESSED_FOLDER = "D:\\buffer_\\uploads"
+PROCESSED_FOLDER = "C:\\Users\\Prithwish\\OneDrive\\Desktop\\umm\\Hack4bengal_4.O\\uploads"
 
 @upload_bp.route('/upload', methods=['POST'])
 def upload():
@@ -14,10 +14,10 @@ def upload():
         selected_algorithm = request.form.get('selectedAlgorithm')
         categorical_input = request.form.get('categoricalInput')
         categorical_target_present = request.form.get('categoricalTargetPresent') == 'true'
-        polynomial_degree = request.form.get('polynomialDegree')
-        regression_random_state = request.form.get('regressionRandomState')
-        decision_tree_criterion = request.form.get('decisionTreeCriterion')
-        classification_random_state = request.form.get('classificationRandomState')
+        # polynomial_degree = request.form.get('polynomialDegree')
+        # regression_random_state = int(request.form.get('regressionRandomState'))
+        # decision_tree_criterion = request.form.get('decisionTreeCriterion')
+        # classification_random_state = int(request.form.get('classificationRandomState'))
 
         # dropOption = request.form.get('dropOption')
         # missOption = request.form.get('missOption')
@@ -75,10 +75,14 @@ def upload():
         # arr.append(int(scaleOption[-1]))
             
         if selected_algorithm == 'polynomial-regression':
+            polynomial_degree = int(request.form.get('polynomialDegree'))
+            regression_random_state = int(request.form.get('regressionRandomState'))
             arr.append(polynomial_degree)
             arr.append(regression_random_state)
             output_path = regression.func_polynomialRegression(arr)
         elif selected_algorithm == 'decision-tree':
+            decision_tree_criterion = request.form.get('decisionTreeCriterion')
+            classification_random_state = int(request.form.get('classificationRandomState'))
             arr.append(decision_tree_criterion)
             arr.append(classification_random_state)
             output_path = classification.func_decisionTreeClassifier(arr)
