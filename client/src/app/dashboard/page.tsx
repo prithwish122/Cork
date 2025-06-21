@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { toast, Toaster } from "sonner"
 import { Upload, File, Save, ClipboardCopy, Trash2, Play } from "lucide-react"
+import { json } from "stream/consumers"
 
 // Replace these with your own UI components or use shadcn/ui
 function Button({ children, ...props }: any) {
@@ -107,8 +108,8 @@ export default function Dashboard() {
       splitDataset: false,
       performScaling: false,
     },
-    algorithmCategory: "",
-    generatedCode: "",
+    algorithmCategory: "classification", // Added property
+    // generatedCode: "",
   })
 
   const [categoricalInput, setCategoricalInput] = useState("")
@@ -324,9 +325,9 @@ print(f"Random State: ${randomState}")
 
       // Add other form data as JSON
       apiFormData.append("options", JSON.stringify(formData.options))
-      apiFormData.append("algorithmCategory", formData.algorithmCategory)
+      // apiFormData.append("algorithmCategory", formData.algorithmCategory)
       apiFormData.append("selectedAlgorithm", selectedAlgorithm)
-      apiFormData.append("generatedCode", formData.generatedCode)
+      // apiFormData.append("generatedCode", formData.generatedCode)
       apiFormData.append("categoricalInput", categoricalInput)
       apiFormData.append("categoricalTargetPresent", categoricalTargetPresent.toString())
       apiFormData.append("polynomialDegree", polynomialDegree)
@@ -334,12 +335,61 @@ print(f"Random State: ${randomState}")
       apiFormData.append("decisionTreeCriterion", decisionTreeCriterion)
       apiFormData.append("classificationRandomState", classificationRandomState)
 
-      // Make API call to Flask backend
-      const response = await fetch("/api/process-ml", {
-        method: "POST",
-        body: apiFormData,
-      })
+      // tool to convert FormData to JSON
+      // function formDataToJson(formData: FormData) {
+      //   const object: Record<string, any> = {};
+      //   formData.forEach((value, key) => {
+      //     // Handle multiple values (like checkboxes or multi-selects)
+      //     if (Object.prototype.hasOwnProperty.call(object, key)) {
+      //       if (!Array.isArray(object[key])) {
+      //         object[key] = [object[key]];
+      //       }
+      //       object[key].push(value);
+      //     } else {
+      //       object[key] = value;
+      //     }
+      //   });
+      //   return object;
+      // }
 
+// displayer
+
+function logFormData(formData: any[] | FormData) {
+  const data: { [key: string]: any } = {};
+
+  formData.forEach((value, key) => {
+    if (data[key]) {
+      // Convert to array if multiple values for the same key
+      if (!Array.isArray(data[key])) {
+        data[key] = [data[key]];
+      }
+      data[key].push(value);
+    } else {
+      data[key] = value;
+    }
+  });
+
+  // Now log the key-value pairs
+  console.log("FormData Contents:");
+  for (const key in data) {
+    console.log(`${key}:`, data[key]);
+  }
+
+  return data; // Optional: returns a usable object
+}
+
+
+      // const jsonData = logFormData(apiFormData);
+      // const jsonString = JSON.stringify(jsonData, null, 2);
+
+      // Make API call to Flask backend
+      const response = await fetch("http://localhost:4000/data", {
+        method: "POST",
+        body: apiFormData, // Use FormData directly
+        // Do not set Content-Type header when sending FormData; browser will set it automatically
+       
+      })
+      console.log(apiFormData, "==============")
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -350,7 +400,8 @@ print(f"Random State: ${randomState}")
       console.log("Backend response:", result)
     } catch (error) {
       console.error("Error processing ML pipeline:", error)
-      setBackendOutput(`Error: ${error.message}`)
+      const errorMessage = typeof error === "object" && error !== null && "message" in error ? (error as { message: string }).message : String(error)
+      setBackendOutput(`Error: ${errorMessage}`)
       toast.error("Failed to process machine learning pipeline. Please check your Flask backend.")
     } finally {
       setIsRunning(false)
@@ -640,7 +691,7 @@ print(f"Random State: ${randomState}")
 
             {/* Algorithm Selection */}
             <div className="">
-              
+
 
               <div className="mb-3 text-orange-300 font-semibold">Choose Algorithm</div>
               <Select
