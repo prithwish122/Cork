@@ -2,9 +2,21 @@ from flask import Blueprint, request, jsonify
 import os
 from algos import regression, classification
 import json
+from dotenv import load_dotenv
+load_dotenv()
+mongo_pass = os.getenv("mongo_pass")
+from pymongo import MongoClient
+import gridfs
+import certifi
+from pymongo.server_api import ServerApi
 
 upload_bp = Blueprint('upload', __name__)
 PROCESSED_FOLDER = "C:\\Users\\Prithwish\\OneDrive\\Desktop\\umm\\Hack4bengal_4.O\\uploads"
+
+uri = "mongodb+srv://pranithdutta26:"+mongo_pass+"@users.gcqvzvl.mongodb.net/?retryWrites=true&w=majority&appName=Users"
+client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
+db = client["test1"]
+fs = gridfs.GridFS(db)
 
 @upload_bp.route('/upload', methods=['POST'])
 def upload():
@@ -30,6 +42,11 @@ def upload():
 
         if not file:
             return jsonify({'error': 'No file uploaded'}), 400
+
+        file_id = fs.put(file, filename=file.filename, content_type='text/csv')
+        print(f"CSV uploaded successfully! File ID: {file_id}")
+        file.seek(0)
+        
         try:
             options = json.loads(options_json)
         except json.JSONDecodeError:
