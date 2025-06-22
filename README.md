@@ -3,14 +3,14 @@
 
 Cork is a lightweight, no-code platform built to streamline machine learning model creation. It removes the need for writing boilerplate code—letting users focus on building and training models using intuitive configuration steps rather than typing scripts.
 
-### 🎯Key Use Cases
+## 🎯Key Use Cases
 - Interactive Learning & Experimentation : 
 Newcomers can explore ML fundamentals by selecting datasets, choosing algorithms, and adjusting hyperparameters—all through guided, interactive steps. Cork provides real-time feedback on how changes impact model performance without exposing users to complex code.
 
 - Rapid Prototype Building : 
 Whether you're a business analyst, domain expert, or ML novice, Cork allows you to build functional models quickly—helping validate ideas in minutes without hiring data scientists or writing code.
 
-### 🌍Why Cork Matters
+## 🌍Why Cork Matters
 - Democratizes ML: Opens the door for non-experts—business analysts, domain specialists—to build models without deep programming skills.
 
 - Speeds Up Prototyping: Simplifies repetitive steps in data prep, model choice, and tuning, enabling you to go from idea to results quickly.
@@ -18,6 +18,35 @@ Whether you're a business analyst, domain expert, or ML novice, Cork allows you 
 - Balances Simplicity & Control: Focuses on streamlined workflows—not full visual IDEs—so you stay closer to the code while still saving time.
 
 ---
+
+## Here are some of the Glimpses of Cork
+
+- Here is the Landing page of Cork
+
+  ![WhatsApp Image 2025-06-22 at 7 35 19 AM (3)](https://github.com/user-attachments/assets/5fa76040-6117-44c9-9888-a0aca44d4ff1)
+
+- Authorization
+
+  ![WhatsApp Image 2025-06-22 at 7 35 19 AM (1)](https://github.com/user-attachments/assets/720625d3-15f7-42ed-b660-0828d2df8493)
+
+- After authorization, on clicking the `Get Started` button, we move to the Home Screen which includes User Details, Community Projects, New Project creation, etc.
+
+  <img width="1920" alt="ForYou_pg_wireframe_draft2" src="https://github.com/user-attachments/assets/faeba8d7-6487-40f8-a5b5-e89fba24536c" />
+
+- On creating a New Project
+
+  ![WhatsApp Image 2025-06-22 at 7 35 19 AM](https://github.com/user-attachments/assets/80333c56-b5ac-499e-8e2e-069a3dfe0c31)
+
+- On uploading a Dataset
+
+  ![WhatsApp Image 2025-06-22 at 7 35 19 AM (2)](https://github.com/user-attachments/assets/4b90566e-ff42-401b-9d00-b4e4597977b1)
+
+- After selecting the required options, we run the model to generate downloadable `.py` file, the model (`.joblib`) & the plot png
+
+  ![WhatsApp Image 2025-06-22 at 7 35 43 AM](https://github.com/user-attachments/assets/5af71358-941f-4e27-a7a3-4cd4625b3f93)
+
+
+
 
 ## ⚙️Prerequisites
 
