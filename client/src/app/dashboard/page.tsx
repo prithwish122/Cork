@@ -5,6 +5,7 @@ import { useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { toast, Toaster } from "sonner"
 import { Upload, File, ClipboardCopy, Trash2, Play, Download, Brain } from "lucide-react"
+import { UserButton } from "@civic/auth/react"
 
 function Button({ children, ...props }: any) {
   return (
@@ -327,13 +328,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-[130vh] relative font-sans">
+    <div className="h-[100vh] relative font-sans">
       <Toaster richColors position="top-right" />
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: "url('/background.png')",
+          backgroundImage: "url('/Background.png')",
         }}
       />
       {/* Blur overlays */}
@@ -392,11 +393,15 @@ export default function Dashboard() {
               Clear
             </Button>
           </div>
-          <div className="ml-auto flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-orange-900 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-              U
-            </div>
-          </div>
+          <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="hidden md:block flex-shrink-0 ml-auto flex items-center gap-4"
+            >
+              {/* <Button > */}
+                <UserButton className="bg-gradient-to-r from-orange-400 to-red-400 hover:from-orange-500 hover:to-red-500 text-black font-semibold px-6 py-2 rounded-full shadow-lg shadow-orange-500/30 border-0" />
+              {/* </Button> */}
+            </motion.div>
         </motion.header>
 
         {/* Main Content */}
@@ -420,7 +425,7 @@ export default function Dashboard() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="flex items-center justify-between px-4 py-2 border-b border-orange-400/30">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-orange-400/30 over">
               <span className="text-orange-300 font-semibold">Python Code (rawPyStr)</span>
               <div className="flex items-center gap-2">
                 {pythonFile && (
@@ -549,7 +554,8 @@ export default function Dashboard() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
           >
-            <div className="text-orange-300 font-semibold mb-2">Select your Options:</div>
+            <div className="text-orange-300 font-semibold mb-2 overflow-hidden
+" >Select your Options:</div>
             <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-orange-400">Import the main libraries</span>
