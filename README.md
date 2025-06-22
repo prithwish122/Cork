@@ -19,7 +19,7 @@ Whether you're a business analyst, domain expert, or ML novice, Cork allows you 
 
 ---
 
-## Here are some of the Glimpses of Cork
+## 📸Here are some of the Glimpses of Cork
 
 - Here is the Landing page of Cork
 
