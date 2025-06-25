@@ -118,6 +118,7 @@ In a new terminal window, navigate to the backend directory and install the Pyth
 
 ```bash
 cd Cork
+cd env
 cd server
 pip install -r requirements.txt
 ```
