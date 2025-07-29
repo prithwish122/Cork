@@ -269,7 +269,7 @@ joblib.dump(classifier, output_path)
 def func_decisionTreeClassifier(arr):
     filepath = arr[0]
     PROCESSED_FOLDER = arr[1]
-    ind = arr[2]
+    ind = 1 if arr[2]==True else 0
     miss = arr[3]
     cat = arr[4]
     cat2 = arr[5]
@@ -287,13 +287,12 @@ import matplotlib.pyplot as plt
     dataset = pd.read_csv(filepath)
     X = dataset.iloc[:, ind:-1].values
     y = dataset.iloc[:, -1].values
-
     s += f'''
 dataset = pd.read_csv(filepath)
 X = dataset.iloc[:, {ind}:-1].values
 y = dataset.iloc[:, -1].values
 '''
-    if miss == 1:
+    if miss == True:
         imputer = SimpleImputer(missing_values = np.nan, strategy='mean') #replace msissing value by mean of that column
         imputer.fit(X[:, 1:3]) #including all numeric columns for filling missing data
         X[:, 1:3] = imputer.transform(X[:, 1:3])
@@ -313,7 +312,7 @@ from sklearn.preprocessing import OneHotEncoder
 ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [{cat}])], remainder='passthrough')
 X = ct.fit_transform(X)
 '''
-    if cat2 == 1:
+    if cat2 == True:
         le = LabelEncoder()
         y = le.fit_transform(y)
         s+= '''
@@ -322,7 +321,7 @@ le = LabelEncoder()
 y = le.fit_transform(y)
 '''
 
-    if split == 1:
+    if split == True:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25, random_state = rs)
         s+= f'''
 from sklearn.model_selection import train_test_split
@@ -334,7 +333,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.25, rand
         y_train = y
         y_test = y
 
-    if scale == 1:
+    if scale == True:
         sc = StandardScaler()
         X_train = sc.fit_transform(X_train)
         X_test = sc.transform(X_test)
@@ -354,7 +353,9 @@ X_test = sc.transform(X_test)
 
     output_path = os.path.join(PROCESSED_FOLDER, 'c6_model.joblib')
     joblib.dump(classifier, output_path)
+    plot_path = os.path.join(PROCESSED_FOLDER, 'c6_plot_1753706118.png')
 
+    '''
     timestamp = int(time.time())
     plot_path = os.path.join(PROCESSED_FOLDER, f'c6_plot_{timestamp}.png')
     X_set, y_set = sc.inverse_transform(X_test), y_test
@@ -372,6 +373,7 @@ X_test = sc.transform(X_test)
     plt.legend()
     plt.savefig(plot_path)
     plt.close()
+    '''
 
     s+= f'''
 from sklearn.tree import DecisionTreeClassifier

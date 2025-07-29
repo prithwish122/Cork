@@ -140,7 +140,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 '''
-    # try:
+
     dataset = pd.read_csv(filepath)
     X = dataset.iloc[:, ind:-1].values
     y = dataset.iloc[:, -1].values
@@ -171,6 +171,7 @@ from sklearn.preprocessing import OneHotEncoder
 ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [{cat}])], remainder='passthrough')
 X = ct.fit_transform(X)
 '''
+
     if cat2 == True:
         le = LabelEncoder()
         y = le.fit_transform(y)

@@ -3,20 +3,20 @@ import os
 from algos import regression, classification
 import json
 from dotenv import load_dotenv
-load_dotenv()
-mongo_pass = os.getenv("mongo_pass")
-from pymongo import MongoClient
-import gridfs
-import certifi
-from pymongo.server_api import ServerApi
+# load_dotenv()
+# mongo_pass = os.getenv("mongo_pass")
+# from pymongo import MongoClient
+# import gridfs
+# import certifi
+# from pymongo.server_api import ServerApi
 
 upload_bp = Blueprint('upload', __name__)
-PROCESSED_FOLDER = "C:\\Users\\Prithwish\\OneDrive\\Desktop\\umm\\Hack4bengal_4.O\\uploads"
+PROCESSED_FOLDER = "D:\\buffer_\\uploads"
 
-uri = "mongodb+srv://pranithdutta26:"+mongo_pass+"@users.gcqvzvl.mongodb.net/?retryWrites=true&w=majority&appName=Users"
-client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
-db = client["test1"]
-fs = gridfs.GridFS(db)
+# uri = "mongodb+srv://pranithdutta26:"+mongo_pass+"@users.gcqvzvl.mongodb.net/?retryWrites=true&w=majority&appName=Users"
+# client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
+# db = client["test1"]
+# fs = gridfs.GridFS(db)
 
 @upload_bp.route('/upload', methods=['POST'])
 def upload():
@@ -25,7 +25,9 @@ def upload():
         options_json = request.form.get('options')
         selected_algorithm = request.form.get('selectedAlgorithm')
         categorical_input = request.form.get('categoricalInput')
+        print(categorical_input)
         categorical_target_present = request.form.get('categoricalTargetPresent') == 'true'
+
         # polynomial_degree = request.form.get('polynomialDegree')
         # regression_random_state = int(request.form.get('regressionRandomState'))
         # decision_tree_criterion = request.form.get('decisionTreeCriterion')
@@ -43,9 +45,9 @@ def upload():
         if not file:
             return jsonify({'error': 'No file uploaded'}), 400
 
-        file_id = fs.put(file, filename=file.filename, content_type='text/csv')
-        print(f"CSV uploaded successfully! File ID: {file_id}")
-        file.seek(0)
+        # file_id = fs.put(file, filename=file.filename, content_type='text/csv')
+        # print(f"CSV uploaded successfully! File ID: {file_id}")
+        # file.seek(0)
         
         try:
             options = json.loads(options_json)
@@ -64,7 +66,7 @@ def upload():
             PROCESSED_FOLDER,
             drop_first_column,
             handle_missing_data,
-            int(categorical_input),
+            int(categorical_input) if categorical_input!='' else -1,
             categorical_target_present,
             # categorical_data,
             split_dataset,
